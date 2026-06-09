@@ -1,0 +1,82 @@
+/*
+  ==============================================================================
+
+    This file contains the basic framework code for a JUCE plugin processor.
+
+  ==============================================================================
+*/
+
+#pragma once
+
+#include <JuceHeader.h>
+
+//==============================================================================
+/**
+*/
+class DetailClipperAudioProcessor  : public juce::AudioProcessor
+{
+public:
+    //==============================================================================
+    DetailClipperAudioProcessor();
+    ~DetailClipperAudioProcessor() override;
+
+    //==============================================================================
+    void prepareToPlay (double sampleRate, int samplesPerBlock) override;
+    void releaseResources() override;
+
+   #ifndef JucePlugin_PreferredChannelConfigurations
+    bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
+   #endif
+
+    void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
+
+    //==============================================================================
+    juce::AudioProcessorEditor* createEditor() override;
+    bool hasEditor() const override;
+
+    //==============================================================================
+    const juce::String getName() const override;
+
+    bool acceptsMidi() const override;
+    bool producesMidi() const override;
+    bool isMidiEffect() const override;
+    double getTailLengthSeconds() const override;
+
+    //==============================================================================
+    int getNumPrograms() override;
+    int getCurrentProgram() override;
+    void setCurrentProgram (int index) override;
+    const juce::String getProgramName (int index) override;
+    void changeProgramName (int index, const juce::String& newName) override;
+
+    //==============================================================================
+    void getStateInformation (juce::MemoryBlock& destData) override;
+    void setStateInformation (const void* data, int sizeInBytes) override;
+    juce::AudioVisualiserComponent oscilloscope{ 1 };
+    juce::AudioProcessorValueTreeState apvts;
+
+private:
+
+    //highpass previous samples
+    float hy_1[2] = {0.0f, 0.0f};
+    float hx_1[2] = {0.0f, 0.0f};
+
+    //dc highpass previous samples
+    float dchy_1[2] = { 0.0f, 0.0f };
+    float dchx_1[2] = { 0.0f, 0.0f };
+    
+    
+    std::unique_ptr<juce::dsp::Oversampling<float>> oversampler;
+
+
+    std::atomic<float>* driveParameter = nullptr;
+    std::atomic<float>* detailBlendParameter = nullptr;
+    std::atomic<float>* detailFreqParameter = nullptr;
+    std::atomic<float>* biasParameter = nullptr;
+    std::atomic<float>* makeupGainParameter = nullptr;
+    std::atomic<float>* dryWetParameter = nullptr;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DetailClipperAudioProcessor)
+    
+    
+};
