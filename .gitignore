@@ -1,5 +1,4 @@
 .vs/
 Builds/
-*.jucer
 *.vst*
 JuceLibraryCode/
